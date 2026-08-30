@@ -44,7 +44,7 @@ Only chat lines that (a) are sent by you and (b) contain at least one color tag 
 2. Go to the **Experimental** tab
 3. Under **Custom Plugin Repositories**, paste this URL:
    ```
-   https://raw.githubusercontent.com/dregan234/scripes-prism/main/repo.json
+   https://raw.githubusercontent.com/dregan234/scribes-prism/main/repo.json
    ```
 4. Click the **+** button and **Save**
 5. Type `/xlplugins` to open the Plugin Installer

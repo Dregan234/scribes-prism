@@ -6,13 +6,13 @@
     "Description": "A private development plugin that recolors chat lines sent by your macros using <white>, <green>, <red>, <blue>, <yellow>, <purple>, <orange> and <#RRGGBB> tags. Coloring is local to your client. Use /prism to open the settings window.",
     "InternalName": "ScribesPrism",
     "AssemblyVersion": "0.1.0.0",
-    "RepoUrl": "https://github.com/dregan234/scripes-prism",
+    "RepoUrl": "https://github.com/dregan234/scribes-prism",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
     "IsHide": false,
     "IsTestingExclusive": false,
-    "DownloadLinkInstall": "https://github.com/dregan234/scripes-prism/releases/latest/download/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/dregan234/scripes-prism/releases/latest/download/latest.zip",
-    "DownloadLinkTesting": "https://github.com/dregan234/scripes-prism/releases/latest/download/latest.zip"
+    "DownloadLinkInstall": "https://github.com/dregan234/scribes-prism/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/dregan234/scribes-prism/releases/latest/download/latest.zip",
+    "DownloadLinkTesting": "https://github.com/dregan234/scribes-prism/releases/latest/download/latest.zip"
   }
 ]
