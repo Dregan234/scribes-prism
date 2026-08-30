@@ -1,0 +1,13 @@
+{
+  "Author": "dregan234",
+  "Name": "Scribe's Prism",
+  "Punchline": "Colorize your macro chat text.",
+  "Description": "A private development plugin that recolors chat lines sent by your macros. Write <w>, <g>, <r>, <b>, <y>, <p>, <o> or <#RRGGBB> tags in your macro text and see them rendered in color in your own chat log. The coloring is local to your client; other players still see the literal tag text.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "macro",
+    "chat",
+    "color",
+    "utility"
+  ]
+}

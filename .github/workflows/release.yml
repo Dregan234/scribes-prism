@@ -1,0 +1,79 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Download Dalamud
+      run: |
+        Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
+        Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+      shell: pwsh
+
+    - name: Restore dependencies
+      run: dotnet restore ScribesPrism.sln
+
+    - name: Build Release
+      shell: pwsh
+      run: |
+        $version = $env:GITHUB_REF_NAME -replace '^v', ''
+        while (($version -split '\.').Count -lt 4) { $version += '.0' }
+        Write-Host "Building version $version"
+        dotnet build ScribesPrism/ScribesPrism.csproj -c Release --no-restore -p:Version=$version
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "ScribesPrism/bin/Release/ScribesPrism/latest.zip,ScribesPrism/bin/Release/ScribesPrism/ScribesPrism.json"
+        allowUpdates: true
+        draft: false
+        prerelease: false
+        generateReleaseNotes: true
+
+    - name: Update repo.json
+      shell: pwsh
+      run: |
+        $manifest = Get-Content "ScribesPrism/bin/Release/ScribesPrism/ScribesPrism.json" -Raw | ConvertFrom-Json
+        $path = "repo.json"
+        $raw = Get-Content $path -Raw
+
+        $current = $null
+        try {
+          $parsed = ConvertFrom-Json $raw
+          if ($parsed -is [array]) { $current = $parsed[0].AssemblyVersion } else { $current = $parsed.AssemblyVersion }
+        } catch {}
+
+        if ($current -eq $manifest.AssemblyVersion) {
+          Write-Host "repo.json already up to date at $($manifest.AssemblyVersion)"
+          exit 0
+        }
+
+        $updated = $raw -replace '("AssemblyVersion"\s*:\s*)"[^"]*"', ('$1"' + $manifest.AssemblyVersion + '"')
+        Set-Content $path $updated -Encoding UTF8
+
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git fetch origin main
+        git checkout main
+        git add repo.json
+        git commit -m "chore: bump repo.json to $($manifest.AssemblyVersion)"
+        git push origin main
