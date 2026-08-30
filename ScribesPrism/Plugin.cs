@@ -43,7 +43,7 @@ public sealed class Plugin : IDalamudPlugin
 
         CommandManager.AddHandler(TestCommandName, new CommandInfo(OnTestCommand)
         {
-            HelpMessage = "Print a colorized macro text preview. Usage: /prismtest <w>Hello <r>World"
+            HelpMessage = "Print a colorized macro text preview. Usage: /prismtest <red>Hello <blue>World"
         });
 
         // Tell the UI system that we want our windows to be drawn through the window system

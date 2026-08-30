@@ -6,48 +6,67 @@ public readonly record struct LetterColor(byte Red, byte Green, byte Blue);
 
 public sealed class Palette
 {
-    public static readonly (char Letter, string Name, uint Rgb)[] Defaults =
+    private static readonly Dictionary<string, string> Aliases = new()
+    {
+        ["w"] = "white",
+        ["g"] = "green",
+        ["y"] = "yellow",
+        ["o"] = "orange",
+    };
+
+    public static readonly (string Name, uint Rgb)[] Defaults =
     [
-        ('w', "White", 0xFFFFFF),
-        ('g', "Green", 0x00FF00),
-        ('r', "Red", 0xFF0000),
-        ('b', "Blue", 0x0000FF),
-        ('y', "Yellow", 0xFFFF00),
-        ('p', "Purple", 0xFF00FF),
-        ('o', "Orange", 0xFF8000),
+        ("red", 0xFF0000),
+        ("green", 0x00FF00),
+        ("blue", 0x0000FF),
+        ("yellow", 0xFFFF00),
+        ("purple", 0xFF00FF),
+        ("orange", 0xFF8000),
+        ("white", 0xFFFFFF),
     ];
 
     private readonly Configuration configuration;
-    private readonly Dictionary<char, uint> defaultColors = new();
+    private readonly Dictionary<string, uint> defaultColors = new();
 
     public Palette(Configuration configuration)
     {
         this.configuration = configuration;
-        foreach (var (letter, _, rgb) in Defaults)
+        foreach (var (name, rgb) in Defaults)
         {
-            this.defaultColors[char.ToLowerInvariant(letter)] = rgb;
+            this.defaultColors[name] = rgb;
         }
     }
 
-    public ColorSpec Resolve(char letter)
+    public ColorSpec Resolve(string name)
     {
-        var rgb = this.GetRgb(letter);
+        var rgb = this.GetRgb(name);
         return rgb is { } c ? new ColorSpec(c.Red, c.Green, c.Blue) : ColorSpec.Default;
     }
 
-    public LetterColor? GetRgb(char letter)
+    public LetterColor? GetRgb(string name)
     {
-        var lower = char.ToLowerInvariant(letter);
-        if (!this.defaultColors.TryGetValue(lower, out var rgb))
+        var canonical = CanonicalName(name);
+        if (canonical is null || !this.defaultColors.TryGetValue(canonical, out var rgb))
         {
             return null;
         }
 
-        if (this.configuration.LetterColorOverrides.TryGetValue(lower, out var overrideRgb))
+        if (this.configuration.LetterColorOverrides.TryGetValue(canonical, out var overrideRgb))
         {
             rgb = overrideRgb;
         }
 
         return new LetterColor((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
+    }
+
+    private static string? CanonicalName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return null;
+        }
+
+        var lower = name.ToLowerInvariant();
+        return Aliases.TryGetValue(lower, out var canonical) ? canonical : lower;
     }
 }

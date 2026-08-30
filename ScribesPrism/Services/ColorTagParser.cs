@@ -23,7 +23,7 @@ public sealed class ColorSegment
 public static class ColorTagParser
 {
     private static readonly Regex ColorTagRegex = new(
-        @"<(?:w|g|r|b|y|p|o)>|#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?>",
+        @"<(?:red|green|blue|yellow|purple|orange|white|w|g|y|o)>|#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?>",
         RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     public static bool ContainsColorTag(string text) => ColorTagRegex.IsMatch(text);
@@ -89,17 +89,21 @@ public static class ColorTagParser
             return false;
         }
 
-        var c = text[index + 1];
-
-        if (c == '#')
+        var close = text.IndexOf('>', index + 1);
+        if (close < 0)
         {
-            var close = text.IndexOf('>', index + 2);
-            if (close < 0)
-            {
-                return false;
-            }
+            return false;
+        }
 
-            var hex = text.AsSpan(index + 2, close - index - 2);
+        var inner = text.AsSpan(index + 1, close - index - 1);
+        if (inner.Length == 0)
+        {
+            return false;
+        }
+
+        if (inner[0] == '#')
+        {
+            var hex = inner[1..];
             if (hex.Length is not (6 or 8))
             {
                 return false;
@@ -131,17 +135,19 @@ public static class ColorTagParser
             return true;
         }
 
-        if (char.IsLetter(c) && index + 2 < text.Length && text[index + 2] == '>')
+        if (!char.IsLetter(inner[0]))
         {
-            var resolved = palette.Resolve(char.ToLowerInvariant(c));
-            if (resolved.IsColor)
-            {
-                spec = resolved;
-                consumed = 3;
-                return true;
-            }
+            return false;
         }
 
-        return false;
+        var resolved = palette.Resolve(inner.ToString());
+        if (!resolved.IsColor)
+        {
+            return false;
+        }
+
+        spec = resolved;
+        consumed = close - index + 1;
+        return true;
     }
 }

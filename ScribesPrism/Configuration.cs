@@ -11,7 +11,7 @@ public class Configuration : IPluginConfiguration
 
     public bool Enabled { get; set; } = true;
 
-    public Dictionary<char, uint> LetterColorOverrides { get; set; } = new();
+    public Dictionary<string, uint> LetterColorOverrides { get; set; } = new();
 
     public void Save()
     {

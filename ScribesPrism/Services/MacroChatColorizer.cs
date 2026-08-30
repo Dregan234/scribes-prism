@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -103,11 +104,19 @@ public sealed class MacroChatColorizer : IDisposable
                 return;
             }
 
-            var colorized = BuildColorized(message.Message, this.palette);
-            if (colorized is not null)
-            {
-                message.Message = colorized;
-            }
+            // Diagnostic: log the raw incoming message structure so any surviving tag that still
+            // renders wrong can be traced to what the game's send/receive path did to the message.
+            var types = string.Join(", ", message.Message.Payloads.Select(p => p.Type.ToString()));
+            this.log.Information(
+                "[ScribesPrism] macro message kind={Kind} sender={Sender} payloads=[{Types}] text={Text}",
+                message.LogKind,
+                message.Sender?.TextValue ?? string.Empty,
+                types,
+                message.Message.TextValue);
+
+            // Rebuild the message from its text alone, exactly like the /prismtest path that renders
+            // correctly, so no artifact payloads from the game's send/receive pipeline survive.
+            message.Message = BuildColorized(message.Message.TextValue, this.palette);
         }
         catch (Exception ex)
         {
@@ -126,39 +135,6 @@ public sealed class MacroChatColorizer : IDisposable
         var localName = this.objectTable[0]?.Name.TextValue;
         return !string.IsNullOrEmpty(localName) &&
                sender.Equals(localName, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static SeString? BuildColorized(SeString original, Palette palette)
-    {
-        var builder = new SeStringBuilder();
-        var changed = false;
-
-        foreach (var payload in original.Payloads)
-        {
-            if (payload is TextPayload textPayload)
-            {
-                foreach (var segment in ColorTagParser.Parse(textPayload.Text ?? string.Empty, palette))
-                {
-                    if (segment.Text.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    if (segment.Color.IsColor)
-                    {
-                        changed = true;
-                    }
-
-                    AppendSegment(builder, segment);
-                }
-            }
-            else
-            {
-                builder.Add(payload);
-            }
-        }
-
-        return changed ? builder.Build() : null;
     }
 
     private static void AppendSegment(SeStringBuilder builder, ColorSegment segment)

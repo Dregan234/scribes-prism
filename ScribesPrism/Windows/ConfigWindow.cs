@@ -33,43 +33,46 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextWrapped("Only chat lines you sent that contain a color tag are recolored, and only in your own chat log. Other players still see the raw tag text.");
         ImGui.Separator();
 
-        ImGui.Text("Letter palette");
+        ImGui.Text("Color palette");
         ImGui.Spacing();
-        foreach (var (letter, name, _) in Palette.Defaults)
+        foreach (var (name, _) in Palette.Defaults)
         {
-            var rgb = this.plugin.Palette.GetRgb(letter);
+            var rgb = this.plugin.Palette.GetRgb(name);
             var color = rgb is { } c
                 ? new Vector4(c.Red / 255f, c.Green / 255f, c.Blue / 255f, 1f)
                 : new Vector4(1f, 1f, 1f, 1f);
 
-            ImGui.PushID($"letter{letter}");
-            ImGui.ColorButton($"##swatch{letter}", color);
+            ImGui.PushID($"color{name}");
+            ImGui.ColorButton($"##swatch{name}", color);
             ImGui.SameLine();
-            if (ImGui.ColorEdit4($"<{letter}>##edit", ref color, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
+            if (ImGui.ColorEdit4($"<{name}>##edit", ref color, ImGuiColorEditFlags.NoAlpha | ImGuiColorEditFlags.NoInputs))
             {
-                this.plugin.Configuration.LetterColorOverrides[char.ToLowerInvariant(letter)] = ToRgb(color);
+                this.plugin.Configuration.LetterColorOverrides[name] = ToRgb(color);
                 this.plugin.Configuration.Save();
             }
 
             ImGui.SameLine();
-            var hasOverride = this.plugin.Configuration.LetterColorOverrides.ContainsKey(char.ToLowerInvariant(letter));
-            if (hasOverride && ImGui.SmallButton("Reset##" + letter))
+            var hasOverride = this.plugin.Configuration.LetterColorOverrides.ContainsKey(name);
+            if (hasOverride && ImGui.SmallButton("Reset##" + name))
             {
-                this.plugin.Configuration.LetterColorOverrides.Remove(char.ToLowerInvariant(letter));
+                this.plugin.Configuration.LetterColorOverrides.Remove(name);
                 this.plugin.Configuration.Save();
             }
 
             ImGui.SameLine();
-            ImGui.Text($"{name}");
+            ImGui.Text($"<{name}>");
             ImGui.PopID();
         }
 
+        ImGui.Spacing();
+        ImGui.TextWrapped("Shorthand aliases: <w> = white, <g> = green, <y> = yellow, <o> = orange. The game strips the letters r, b and p, so red/blue/purple use their full names.");
+
         ImGui.Separator();
         ImGui.TextWrapped("Tags color the rest of the line until the next tag; a newline resets the color.");
-        ImGui.TextWrapped("Escape a tag as \\<r> to print it literally. Native tags such as <se.1> and <t> pass through untouched.");
+        ImGui.TextWrapped("Escape a tag as \\<red> to print it literally. Native tags such as <se.1> and <t> pass through untouched.");
         ImGui.Spacing();
         ImGui.Text("Example:");
-        ImGui.TextWrapped("<w>WARNING <g>GO <r>STOP <#7F00FF>Custom");
+        ImGui.TextWrapped("<white>WARNING <green>GO <red>STOP <#7F00FF>Custom");
         ImGui.Spacing();
         ImGui.TextWrapped("Use /prismtest <text> to print a colorized preview in chat.");
     }

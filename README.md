@@ -6,31 +6,32 @@ It is based on GoatCorp's SamplePlugin template and remains licensed under AGPL-
 
 ## How it works
 
-FFXIV does not render color markup in chat or macros natively, so tags like `<r>WARNING` would normally appear as literal text. Scribe's Prism watches incoming chat lines that you sent, and whenever one contains a color tag, it rebuilds that line with real foreground-color payloads. Because the recoloring happens on your client's chat-log path, the colors only appear to you — other players still see the raw tag text.
+FFXIV does not render color markup in chat or macros natively, so tags like `<red>WARNING` would normally appear as literal text. Scribe's Prism watches incoming chat lines that you sent, and whenever one contains a color tag, it rebuilds that line with real foreground-color payloads. Because the recoloring happens on your client's chat-log path, the colors only appear to you — other players still see the raw tag text.
 
 ## Color tags
 
 | Tag | Effect |
 | --- | --- |
-| `<w>` | White |
-| `<g>` | Green |
-| `<r>` | Red |
-| `<b>` | Blue |
-| `<y>` | Yellow |
-| `<p>` | Purple |
-| `<o>` | Orange |
+| `<white>` / `<w>` | White |
+| `<green>` / `<g>` | Green |
+| `<red>` | Red |
+| `<blue>` | Blue |
+| `<yellow>` / `<y>` | Yellow |
+| `<purple>` | Purple |
+| `<orange>` / `<o>` | Orange |
 | `<#RRGGBB>` | Custom color, e.g. `<#7F00FF>` |
 
 Rules:
 
 - A tag colors the rest of the line until the next color tag. A newline resets the color to the channel default.
-- `\<r>` (a backslash before a tag) prints the tag literally as text.
-- Native FFXIV tags such as `<se.1>`, `<t>`, `<me>`, and `<item:...>` pass through untouched.
+- `\<red>` (a backslash before a tag) prints the tag literally as text.
+- Native FFXIV tags such as `<se.1>`, `<t>`, and `<item:...>` pass through untouched.
+- The game itself strips the single letters `<r>`, `<b>`, and `<p>` from outgoing chat, so those colors use their full names (`<red>`, `<blue>`, `<purple>`) instead.
 
 Example macro line:
 
 ```
-/p <w>WARNING <g>GO <r>STOP <#7F00FF>Custom
+/p <white>WARNING <green>GO <red>STOP <#7F00FF>Custom
 ```
 
 Only chat lines that (a) are sent by you and (b) contain at least one color tag are processed; everything else is left alone.
